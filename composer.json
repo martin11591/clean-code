@@ -1,0 +1,14 @@
+{
+    "name": "martin/clean-code",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "require": {
+        "php": ">=7.1",
+        "vlucas/phpdotenv": "^4.1",
+        "phpmailer/phpmailer": "^6.2"
+    }
+}

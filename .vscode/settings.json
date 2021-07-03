@@ -1,0 +1,11 @@
+{
+    "terminal.integrated.env.windows": {
+        // "PATH": "\\DEV\\Laragon\\bin\\cmder\\;\\DEV\\Laragon\\bin\\composer;\\DEV\\Laragon\\bin\\git;\\DEV\\Laragon\\bin\\mysql\\mariadb-10.5.5-winx64;\\DEV\\Laragon\\bin\\ngrok;\\DEV\\Laragon\\bin\\nodejs\\node-v14.12.0-current-win-x64;\\DEV\\Laragon\\bin\\php\\php-5.6.40-Win32-VC11-x64;\\DEV\\Laragon\\bin\\putty\\;\\DEV\\Laragon\\bin\\python\\python-3.6.1;\\DEV\\Laragon\\bin\\telnet;\\DEV\\Laragon\\bin\\yarn\\bin;${env:PATH}"
+    },
+    "logViewer.watch": [
+        {
+            "title": "Clean Code Log",
+            "pattern": "logs/*"
+        }
+    ]
+}

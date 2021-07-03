@@ -1,0 +1,8 @@
+# :Location /*.php
+# Use php74
+# :Location /*
+
+DirectoryIndex index.php
+RewriteEngine On
+
+RewriteRule ^ public/index.php [L,QSA]
