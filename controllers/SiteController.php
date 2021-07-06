@@ -6,6 +6,7 @@ use app\core\Application;
 use app\core\Controller;
 use app\core\Database;
 use app\core\Helpers;
+use app\core\middlewares\SessionMiddleware;
 use app\core\Tree;
 use app\core\TreeNode;
 
@@ -91,15 +92,14 @@ class SiteController extends Controller {
 
         } */
 
-        $a = [];
-        for ($i = 0; $i < 10000; $i++) array_unshift($a, 1);
-        $b = "";
-        for ($i = 0; $i < 10000; $i++) $b = "x|{$b}";
-        $start = microtime(true);
-        while ()
-        $step1 = microtime(true);
-        $end = microtime(true);
-        var_dump($step1 - $start, $end - $step1);
+        // $a = [];
+        // for ($i = 0; $i < 10000; $i++) array_unshift($a, 1);
+        // $b = "";
+        // for ($i = 0; $i < 10000; $i++) $b = "x|{$b}";
+        // $start = microtime(true);
+        // $step1 = microtime(true);
+        // $end = microtime(true);
+        // var_dump($step1 - $start, $end - $step1);
 
         $db = new Database('sqlite:test.db');
         $db = $db->connect();

@@ -256,6 +256,8 @@ class Router {
             // Instantiate class to get access to the methods
             Application::$app->controller = $callback[0] = new $callback[0]();
             if (!method_exists($callback[0], $callback[1])) throw new \Exception("Controller \"" . get_class($callback[0]) . "\" does not have \"{$callback[1]}\" method");
+            $middlewares = $callback[0]->getMiddlewares();
+            foreach ($middlewares as $middleware) $middleware->execute();
         }
         return call_user_func($callback, Application::$app->request, Application::$app->response, $matches);
     }
