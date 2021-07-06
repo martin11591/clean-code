@@ -104,25 +104,25 @@ class Session {
 
     public function registerBeforeGetMiddleware($middleware)
     {
-        return $this->registerMiddleware($this->middlewares["before"]["get"], $middleware);
+        return $this->registerMiddlewareToContainer($this->middlewares["before"]["get"], $middleware);
     }
 
     public function registerAfterGetMiddleware($middleware)
     {
-        return $this->registerMiddleware($this->middlewares["after"]["get"], $middleware);
+        return $this->registerMiddlewareToContainer($this->middlewares["after"]["get"], $middleware);
     }
 
     public function registerBeforeSetMiddleware($middleware)
     {
-        return $this->registerMiddleware($this->middlewares["before"]["set"], $middleware);
+        return $this->registerMiddlewareToContainer($this->middlewares["before"]["set"], $middleware);
     }
 
     public function registerAfterSetMiddleware($middleware)
     {
-        return $this->registerMiddleware($this->middlewares["after"]["set"], $middleware);
+        return $this->registerMiddlewareToContainer($this->middlewares["after"]["set"], $middleware);
     }
 
-    private function registerMiddleware(&$container, $middleware)
+    private function registerMiddlewareToContainer(&$container, $middleware)
     {
         if ($middleware instanceof BaseMiddleware || (is_callable($middleware) && $middleware instanceof \Closure) || (is_array($middleware) && class_exists($middleware[0]))) {
             $container[] = $middleware;
