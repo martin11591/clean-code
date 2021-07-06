@@ -29,8 +29,6 @@ class Application {
         $this->paths = $this->environment->paths;
         $this->addPathsFromConfigToEnv();
 
-        $this->logger->log(print_r($this->paths, true));
-
         $this->request = new Request();
         $this->session = new Session();
         $this->response = new Response();

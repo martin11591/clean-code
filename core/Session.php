@@ -3,6 +3,7 @@
 namespace app\core;
 
 use app\core\Application;
+use app\core\middlewares\BaseMiddleware;
 
 class Session {
     const NON_EXISTENT_AS_NULL = 'nonexistent';
@@ -12,7 +13,7 @@ class Session {
     public static $overwrite = self::OVERWRITE;
 
     private $instance = null;
-    private $modifiers = [
+    private $middlewares = [
         "before" => [
             "get" => [],
             "set" => []
@@ -22,7 +23,7 @@ class Session {
             "set" => []
         ],
     ];
-    
+
     public function __construct($name = "")
     {
         if (session_name() === "PHPSESSID") session_name($_ENV['APP_NAME']);
@@ -43,22 +44,22 @@ class Session {
     public function get($key = null)
     {
         $pair = $this->keyAndValueToObject($key);
-        $this->callModifiers($this->modifiers["before"]["get"], $pair);
+        $this->callMiddlewares($this->middlewares["before"]["get"], $pair);
         if ($pair->key === null) return $this->instance;
         if ($this->existsThrow($pair->key)) {
             $pair->value = $this->instance[$pair->key];
-            $this->callModifiers($this->modifiers["after"]["get"], $pair);
+            $this->callMiddlewares($this->middlewares["after"]["get"], $pair);
             return $pair->value;
         } else return null;
     }
-    
+
     public function set($key, $value = null)
     {
         if (self::$overwrite === self::OVERWRITE || (self::$overwrite === self::NO_OVERWRITE) && !$this->exists($key)) {
             $pair = $this->keyAndValueToObject($key, $value);
-            $this->callModifiers($this->modifiers["before"]["set"], $pair);
+            $this->callMiddlewares($this->middlewares["before"]["set"], $pair);
             $this->instance[$pair->key] = $pair->value;
-            $this->callModifiers($this->modifiers["after"]["set"], $pair);
+            $this->callMiddlewares($this->middlewares["after"]["set"], $pair);
             $this->instance[$pair->key] = $pair->value;
         }
         return $this;
@@ -72,11 +73,15 @@ class Session {
         return $pair;
     }
 
-    private function callModifiers($modifiers, $pair)
+    private function callMiddlewares($middlewares, &$pair)
     {
-        foreach ($modifiers as $callback) {
-            // $callback = \Closure::bind($callback, Application::$app);
-            $callback->call(Application::$app, $pair);
+        foreach ($middlewares as $middleware) {
+            // $middleware = \Closure::bind($middleware, Application::$app);
+            if ($middleware instanceof BaseMiddleware) {
+                $pair = $middleware->execute($pair);
+            } else if (is_callable($middleware) && $middleware instanceof \Closure) {
+                $middleware->call(Application::$app, $pair);
+            }
         }
     }
 
@@ -97,32 +102,32 @@ class Session {
         return $this->exists($key);
     }
 
-    public function registerBeforeGetModifier($callback)
+    public function registerBeforeGetMiddleware($middleware)
     {
-        return $this->registerModifier($this->modifiers["before"]["get"], $callback);        
+        return $this->registerMiddleware($this->middlewares["before"]["get"], $middleware);
     }
 
-    public function registerAfterGetModifier($callback)
+    public function registerAfterGetMiddleware($middleware)
     {
-        return $this->registerModifier($this->modifiers["after"]["get"], $callback);        
+        return $this->registerMiddleware($this->middlewares["after"]["get"], $middleware);
     }
 
-    public function registerBeforeSetModifier($callback)
+    public function registerBeforeSetMiddleware($middleware)
     {
-        return $this->registerModifier($this->modifiers["before"]["set"], $callback);        
+        return $this->registerMiddleware($this->middlewares["before"]["set"], $middleware);
     }
 
-    public function registerAfterSetModifier($callback)
+    public function registerAfterSetMiddleware($middleware)
     {
-        return $this->registerModifier($this->modifiers["after"]["set"], $callback);        
+        return $this->registerMiddleware($this->middlewares["after"]["set"], $middleware);
     }
 
-    private function registerModifier(&$container, $callback)
+    private function registerMiddleware(&$container, $middleware)
     {
-        if ((is_callable($callback) && $callback instanceof \Closure) || (is_array($callback) && class_exists($callback[0]))) {
-            $container[] = $callback;
+        if ($middleware instanceof BaseMiddleware || (is_callable($middleware) && $middleware instanceof \Closure) || (is_array($middleware) && class_exists($middleware[0]))) {
+            $container[] = $middleware;
 
-        } else throw new \Exception("Cannot register get modifier for session - invalid callback");
+        } else throw new \Exception("Cannot register Middleware for session - invalid callback");
         return $this;
     }
 }
