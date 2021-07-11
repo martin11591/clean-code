@@ -5,7 +5,7 @@ namespace app\core\traits;
 use app\core\Application;
 use app\core\middlewares\BaseMiddleware;
 
-trait TraitMiddleware {
+trait MiddlewareTrait {
     private function registerMiddlewareToContainer(&$container, $middleware)
     {
         if ($middleware instanceof BaseMiddleware || (is_callable($middleware) && $middleware instanceof \Closure) || (is_array($middleware) && class_exists($middleware[0]))) {

@@ -2,10 +2,11 @@
 
 namespace app\core;
 
+use app\core\traits\MiddlewareTrait;
 use app\core\traits\TraitMiddleware;
 
 class Controller {
-    use TraitMiddleware;
+    use MiddlewareTrait;
 
     private $middlewares = [];
 

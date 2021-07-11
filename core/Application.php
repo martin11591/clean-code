@@ -4,6 +4,7 @@ namespace app\core;
 
 use app\core\Environment;
 use app\core\Config;
+use app\core\database\Database;
 
 class Application {
     public $logger;
@@ -30,8 +31,14 @@ class Application {
         $this->addPathsFromConfigToEnv();
 
         $this->request = new Request();
+        $this->language = 1;    // * TODO: Language from DB
+
         $this->session = new Session();
         $this->response = new Response();
+
+        $this->db = new Database($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
+        $this->dbh = $this->db->connect();
+
         $this->controller = null;
         $this->view = new View();
         $this->view->setLayout("main");
