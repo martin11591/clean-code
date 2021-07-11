@@ -27,7 +27,7 @@ class SiteController extends Controller {
         };
         $test->x = null;
         $test->load(['x' => 5, 'value' => 3]);
-        $test->insert();
+        $dbh->delete('items', '`id` > 15');
         var_dump($test);
 
         $menusColumns = implode(", ", array_map(function($item) {

@@ -60,4 +60,15 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
     {
         $this->insertReplace($table, $fields, $values);
     }
+
+    public function delete($table, $conditionals)
+    {
+        if ($this->transactionEnabled()) $this->handler->beginTransaction();
+        $stmt = $this->handler->prepare("DELETE FROM `{$table}` WHERE {$conditionals}");
+        $stmt->execute();
+        if ($this->transactionEnabled()) {
+            $this->tryCommit();
+        }
+        return true;
+    }
 }
