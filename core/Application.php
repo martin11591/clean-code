@@ -38,6 +38,7 @@ class Application {
 
         $this->db = new Database($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
         $this->dbh = $this->db->connect();
+        $this->dbh->setTransactionMode($this->dbh::FULL_TRANSACTION);
 
         $this->controller = null;
         $this->view = new View();

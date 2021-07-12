@@ -76,7 +76,7 @@ abstract class DbModel extends Model {
         $fields = $this->specifiedFields($fields);
         if (!$primaryKey) $primaryKey = $this->primaryKey();
         if (is_array($primaryKey) && count($primaryKey) > 1) $primaryKey = $primaryKey[0];
-        if (!in_array($primaryKey, $this->fields())) return null;
+        if (!in_array($primaryKey, $this->fields()) || !isset($this->{$primaryKey})) return null;
         $fields = array_values(array_diff($fields, [$primaryKey]));
         $query = rtrim("WHERE `{$primaryKey}` = " . $this->{$primaryKey} . " " . trim($conditionals, " "), " ");
         return Application::$app->dbh->update($this->tableName(), $fields, $this->values($fields), $query);

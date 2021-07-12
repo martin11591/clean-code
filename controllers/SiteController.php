@@ -19,20 +19,6 @@ class SiteController extends Controller {
 
         $dbh = $app->dbh;
 
-        $test = new class extends \app\core\database\DbModel {
-            public function tableName()
-            {
-                return 'items';
-            }
-        };
-        $test->x = null;
-        $dbh->setTransactionMode($dbh::FULL_TRANSACTION);
-        // $test->load(['id' => rand(11, 20), 'value' => rand(1, 10)]);
-        $t = $test->getAll(['value'], 5, 4);
-        $t[0]->value = -3;
-        $t[0]->update();
-        var_dump($test, $t);
-
         $menusColumns = implode(", ", array_map(function($item) {
             return "menus.`{$item}`";
         }, ["id", "name", "display_name", "meta_title", "meta_desc", "meta_keys", "flink"]));

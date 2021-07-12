@@ -171,4 +171,9 @@ abstract class Helpers {
         $array = array_splice($array, $pos, 0, $element);
         return $array;
     }
+
+    public static function hash($string)
+    {
+        return hash_hmac('sha256', $string, $_ENV['APP_KEY']);
+    }
 }

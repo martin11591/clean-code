@@ -102,6 +102,6 @@ class Cache {
 
     private function generateID($id)
     {
-        return hash_hmac('sha256', $id, $_ENV['APP_KEY']);
+        return Helpers::hash($id);
     }
 }
