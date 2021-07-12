@@ -26,9 +26,12 @@ class SiteController extends Controller {
             }
         };
         $test->x = null;
-        $test->load(['x' => 5, 'value' => 3]);
-        $dbh->delete('items', '`id` > 15');
-        var_dump($test);
+        $dbh->setTransactionMode($dbh::FULL_TRANSACTION);
+        // $test->load(['id' => rand(11, 20), 'value' => rand(1, 10)]);
+        $t = $test->getAll(['value'], 5, 4);
+        $t[0]->value = -3;
+        $t[0]->update();
+        var_dump($test, $t);
 
         $menusColumns = implode(", ", array_map(function($item) {
             return "menus.`{$item}`";

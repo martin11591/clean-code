@@ -41,7 +41,7 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
         return false;
     }
 
-    public function singleTransaction()
+    public function isSingleTransaction()
     {
         if ($this->transactionMode === self::SINGLE_TRANSACTION) return true;
         return false;
@@ -63,11 +63,11 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
     {
         foreach ($values as $row) {
             $stmt->execute(array_values($row));
-            if ($this->singleTransaction()) {
+            if ($this->isSingleTransaction()) {
                 $this->tryCommit();
             }
         }
-        if (!$this->singleTransaction() && $this->transactionEnabled()) {
+        if (!$this->isSingleTransaction() && $this->transactionEnabled()) {
             $this->tryCommit();
         }
         return true;
@@ -107,5 +107,32 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
         $queryValues = substr($queryValues, 0, -2);
         $queryValues = "({$queryValues})";
         return $queryValues;
+    }
+
+    private function prepareUpdateSet($fields, $named = false)
+    {
+        $querySet = "";
+        foreach ($fields as $field) {
+            if ($named === true) {
+                $querySet .= "`{$field}` = :{$field}, ";
+            } else {
+                $querySet .= "`{$field}` = ?, ";
+            }
+        }
+        $querySet = substr($querySet, 0, -2);
+        return $querySet;
+    }
+
+    private function prepareUpdateValues($fields, $values, $named = false)
+    {
+        $valuesArray = [];
+        foreach ($fields as $field) {
+            if ($named === true) {
+                $valuesArray[":{$field}"] = $values[$field];
+            } else {
+                $valuesArray[] = $values[$field];
+            }
+        }
+        return $valuesArray;
     }
 }

@@ -5,8 +5,9 @@ namespace app\core\database;
 class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInterface {
     private static $tables;
     private static $columns = [];
+    private static $primaryKeys = [];
 
-    public function getTables($cached = true)
+    protected function getTables($cached = true)
     {
         if ($cached === true && isset(self::$tables)) return self::$tables;
         $stmt = $this->handler->prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
@@ -19,7 +20,7 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
         return $result;
     }
 
-    public function getColumns($table, $cached = true)
+    protected function getColumns($table, $cached = true)
     {
         if ($cached === true && isset(self::$columns[$table])) return self::$columns[$table];
         $stmt = $this->handler->prepare("PRAGMA table_info({$table})");
@@ -28,6 +29,20 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
         while (($row = $stmt->fetch(\PDO::FETCH_ASSOC))) {
             $result[] = $row['name'];
         };
+        self::$columns[$table] = $result;
+        return $result;
+    }
+
+    protected function getPrimaryKeys($table, $cached = true)
+    {
+        if ($cached === true && isset(self::$primaryKeys[$table])) return self::$primaryKeys[$table];
+        $stmt = $this->handler->prepare("PRAGMA table_info({$table})");
+        $stmt->execute();
+        $result = [];
+        while (($row = $stmt->fetch(\PDO::FETCH_ASSOC))) {
+            if ($row['pk'] === '1') $result[] = $row['name'];
+        };
+        self::$primaryKeys[$table] = $result;
         return $result;
     }
 
@@ -66,6 +81,20 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("DELETE FROM `{$table}` WHERE {$conditionals}");
         $stmt->execute();
+        if ($this->transactionEnabled()) {
+            $this->tryCommit();
+        }
+        return true;
+    }
+
+    public function update($table, $fields, $values, $conditionals = "")
+    {
+        $querySet = $this->prepareUpdateSet($fields);
+        $queryValues = $this->prepareUpdateValues($fields, $values);
+        if ($this->transactionEnabled()) $this->handler->beginTransaction();
+        $query = rtrim("UPDATE `{$table}` SET {$querySet} {$conditionals}", " ");
+        $stmt = $this->handler->prepare($query);
+        $stmt->execute($queryValues);
         if ($this->transactionEnabled()) {
             $this->tryCommit();
         }

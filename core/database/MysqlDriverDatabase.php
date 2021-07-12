@@ -6,8 +6,9 @@ class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterf
     private static $dbName;
     private static $tables;
     private static $columns = [];
+    private static $primaryKeys = [];
 
-    public function getDBName()
+    protected function getDBName()
     {
         if (isset(self::$dbName)) return self::$dbName;
         $stmt = $this->handler->prepare("SELECT DATABASE()");
@@ -16,7 +17,7 @@ class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterf
         return self::$dbName;
     }
 
-    public function getTables($cached = true)
+    protected function getTables($cached = true)
     {
         if ($cached === true && isset(self::$tables)) return self::$tables;
         $dbName = $this->getDBName();
@@ -30,7 +31,7 @@ class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterf
         return $result;
     }
 
-    public function getColumns($table, $cached = true)
+    protected function getColumns($table, $cached = true)
     {
         if ($cached === true && isset(self::$columns[$table])) return self::$columns[$table];
         $dbName = $this->getDBName();
@@ -41,6 +42,20 @@ class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterf
             $result[] = $row['column_name'];
         };
         self::$columns[$table] = $result;
+        return $result;
+    }
+
+    protected function getPrimaryKeys($table, $cached = true)
+    {
+        if ($cached === true && isset(self::$primaryKeys[$table])) return self::$primaryKeys[$table];
+        $dbName = $this->getDBName();
+        $stmt = $this->handler->prepare("SELECT `column_name` FROM `information_schema`.`key_column_usage` WHERE `table_schema` = '{$dbName}' AND `table_name` = '{$table}' AND `constraint_name` = 'PRIMARY'");
+        $stmt->execute();
+        $result = [];
+        while (($row = $stmt->fetch(\PDO::FETCH_ASSOC))) {
+            $result[] = $row['column_name'];
+        };
+        self::$primaryKeys[$table] = $result;
         return $result;
     }
 
