@@ -129,6 +129,26 @@ class Session {
         return $this->registerMiddlewareToContainer($this->middlewares["after"]["set"], $middleware);
     }
 
+    public function registerBeforeGetShortMiddleware($middleware)
+    {
+        return $this->registerMiddlewareToContainer($this->middlewares["before"]["shortGet"], $middleware);
+    }
+
+    public function registerAfterGetShortMiddleware($middleware)
+    {
+        return $this->registerMiddlewareToContainer($this->middlewares["after"]["shortGet"], $middleware);
+    }
+
+    public function registerBeforeSetShortMiddleware($middleware)
+    {
+        return $this->registerMiddlewareToContainer($this->middlewares["before"]["shortSet"], $middleware);
+    }
+
+    public function registerAfterSetShortMiddleware($middleware)
+    {
+        return $this->registerMiddlewareToContainer($this->middlewares["after"]["shortSet"], $middleware);
+    }
+
     private function registerMiddlewareToContainer(&$container, $middleware)
     {
         if ($middleware instanceof BaseMiddleware || (is_callable($middleware) && $middleware instanceof \Closure) || (is_array($middleware) && class_exists($middleware[0]))) {
