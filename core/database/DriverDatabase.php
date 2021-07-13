@@ -12,6 +12,8 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
     protected $handler = null;
     private $transactionMode = self::NO_TRANSACTION;
 
+    private static $lastInsertId = null;
+
     public function __construct(\PDO $handler)
     {
         $this->handler = $handler;
@@ -50,6 +52,7 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
     private function tryCommit()
     {
         try {
+            self::$lastInsertId = $this->handler->lastInsertId();
             $this->handler->commit();
         } catch (\PDOException $e)
         {
@@ -87,10 +90,11 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
         return $names;
     }
 
-    private function prepareColumns($fields)
+    private function prepareColumns($fields, $wrap = false)
     {
         $queryColumns = $this->escapeColumnNames($fields);
-        $queryColumns = "(" . implode(", ", $queryColumns) . ")";
+        $queryColumns = implode(", ", $queryColumns);
+        if ($wrap === true) $queryColumns = "({$queryColumns})";
         return $queryColumns;
     }
 
@@ -134,5 +138,11 @@ abstract class DriverDatabase implements DriverDatabaseInterface {
             }
         }
         return $valuesArray;
+    }
+
+    public function lastInsertId()
+    {
+        if (!$this->transactionEnabled()) return $this->handler->lastInsertId();
+        return self::$lastInsertId;
     }
 }

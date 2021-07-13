@@ -2,6 +2,8 @@
 
 namespace app\core\database;
 
+use app\core\traits\DriverDatabaseTrait;
+
 class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInterface {
     private static $tables;
     private static $columns = [];
@@ -54,7 +56,7 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
     public function insert($table, $fields, $values)
     {
         $values = array_slice(func_get_args(), 2);
-        $queryColumns = $this->prepareColumns($fields);
+        $queryColumns = $this->prepareColumns($fields, true);
         $queryValues = $this->prepareValues($fields);
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("INSERT INTO `{$table}` {$queryColumns} VALUES {$queryValues}");
@@ -64,7 +66,7 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
     public function insertReplace($table, $fields, $values)
     {
         $values = array_slice(func_get_args(), 2);
-        $queryColumns = $this->prepareColumns($fields);
+        $queryColumns = $this->prepareColumns($fields, true);
         $queryValues = $this->prepareValues($fields);
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("REPLACE INTO `{$table}` {$queryColumns} VALUES {$queryValues}");
@@ -76,28 +78,5 @@ class SqliteDriverDatabase extends DriverDatabase implements DriverDatabaseInter
         $this->insertReplace($table, $fields, $values);
     }
 
-    public function delete($table, $conditionals)
-    {
-        if ($this->transactionEnabled()) $this->handler->beginTransaction();
-        $stmt = $this->handler->prepare("DELETE FROM `{$table}` WHERE {$conditionals}");
-        $stmt->execute();
-        if ($this->transactionEnabled()) {
-            $this->tryCommit();
-        }
-        return true;
-    }
-
-    public function update($table, $fields, $values, $conditionals = "")
-    {
-        $querySet = $this->prepareUpdateSet($fields);
-        $queryValues = $this->prepareUpdateValues($fields, $values);
-        if ($this->transactionEnabled()) $this->handler->beginTransaction();
-        $query = rtrim("UPDATE `{$table}` SET {$querySet} {$conditionals}", " ");
-        $stmt = $this->handler->prepare($query);
-        $stmt->execute($queryValues);
-        if ($this->transactionEnabled()) {
-            $this->tryCommit();
-        }
-        return true;
-    }
+    use DriverDatabaseTrait;
 }

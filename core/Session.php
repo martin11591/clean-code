@@ -200,6 +200,15 @@ class Session {
         } else return null;
     }
 
+    public function getAllShorts()
+    {
+        $shorts = [];
+        foreach ($this->shortInstance as $key => $value) {
+            $shorts[$key] = $this->getShort($key);
+        }
+        return $shorts;
+    }
+
     public function shortDelete($key)
     {
         if ($this->shortExists($key)) unset($this->shortInstance[$key]);

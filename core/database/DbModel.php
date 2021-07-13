@@ -59,10 +59,17 @@ abstract class DbModel extends Model {
          }
     }
 
-    public function insert()
+    public function insert($doNotRemovePrimaryKey = false)
     {
         if (!$this->fields()) return null;
-        return Application::$app->dbh->insert($this->tableName(), $this->fields(), $this->values());
+        $fields = $this->fields();
+        $primaryKey = $this->primaryKey();
+        $values = $this->values();
+        if ($doNotRemovePrimaryKey !== true) {
+            $fields = array_values(array_diff($fields, [$primaryKey]));
+            unset($values[$primaryKey]);
+        }
+        return Application::$app->dbh->insert($this->tableName(), $fields, $values);
     }
 
     public function put()
@@ -82,6 +89,15 @@ abstract class DbModel extends Model {
         return Application::$app->dbh->update($this->tableName(), $fields, $this->values($fields), $query);
     }
 
+    public function delete($primaryKey = null)
+    {
+        if (!$primaryKey) $primaryKey = $this->primaryKey();
+        if (is_array($primaryKey) && count($primaryKey) > 1) $primaryKey = $primaryKey[0];
+        if (!in_array($primaryKey, $this->fields()) || !isset($this->{$primaryKey})) return null;
+        var_dump($primaryKey, $this);
+        return Application::$app->dbh->delete($this->tableName(), "{$primaryKey} = " . $this->{$primaryKey});
+    }
+
     private function values($fields = [])
     {
         $values = [];
@@ -91,7 +107,7 @@ abstract class DbModel extends Model {
         return $values;
     }
 
-    private function find($data = [], $join = "OR", $limit = 1)
+    public function find($data = [], $join = "OR", $limit = false)
     {
         $join = trim(strtoupper($join), " ");
         if ($join !== "AND") $join = "OR";
@@ -111,18 +127,32 @@ abstract class DbModel extends Model {
         if (empty($result)) {
             return false;
         } else {
-            return $result[0];
+            return $result;
         }
     }
 
-    public function findExact($data = [], $limit = 1)
+    public function findExact($data = [])
     {
-        return $this->find($data, "AND", $limit);
+        return $this->find($data, "AND", false);
     }
 
-    public function findAny($data = [], $limit = 1)
+    public function findAny($data = [])
     {
-        return $this->find($data, "OR", $limit);
+        return $this->find($data, "OR", false);
+    }
+
+    public function findOneExact($data = [])
+    {
+        $result = $this->find($data, "AND", 1);
+        if ($result) $result = $result[0];
+        return $result;
+    }
+
+    public function findOneAny($data = [])
+    {
+        $result = $this->find($data, "OR", 1);
+        if ($result) $result = $result[0];
+        return $result;
     }
 
     public function getAll($fields = "*", $perPage = false, $page = 1)
@@ -146,6 +176,13 @@ abstract class DbModel extends Model {
         $stmt = Application::$app->dbh->query($query);
         $class = get_class($this);
         $result = $stmt->fetchAll(\PDO::FETCH_CLASS, $class);
+        return $result;
+    }
+
+    public function getColumn($column, $where = false)
+    {
+        $stmt = Application::$app->dbh->query("SELECT `{$column}` FROM {$this->tableName()}" . ($where !== false ? " {$where}" : ""));
+        $result = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         return $result;
     }
 }

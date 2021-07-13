@@ -2,6 +2,9 @@
 
 namespace app\core\database;
 
+use app\core\Application;
+use app\core\traits\DriverDatabaseTrait;
+
 class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterface {
     private static $dbName;
     private static $tables;
@@ -62,30 +65,32 @@ class MysqlDriverDatabase extends DriverDatabase implements DriverDatabaseInterf
     public function insert($table, $fields, $values)
     {
         $values = array_slice(func_get_args(), 2);
-        $queryColumns = $this->prepareColumns($fields);
+        $queryColumns = $this->prepareColumns($fields, true);
         $queryValues = $this->prepareValues($fields);
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("INSERT INTO `{$table}` {$queryColumns} VALUES {$queryValues}");
-        $this->executeStatements($stmt, $values);
+        return $this->executeStatements($stmt, $values);
     }
 
     public function insertReplace($table, $fields, $values)
     {
         $values = array_slice(func_get_args(), 2);
-        $queryColumns = $this->prepareColumns($fields);
+        $queryColumns = $this->prepareColumns($fields, true);
         $queryValues = $this->prepareValues($fields);
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("REPLACE INTO `{$table}` {$queryColumns} VALUES {$queryValues}");
-        $this->executeStatements($stmt, $values);
+        return $this->executeStatements($stmt, $values);
     }
 
     public function insertUpdate($table, $fields, $values)
     {
         $values = array_slice(func_get_args(), 2);
-        $queryColumns = $this->prepareColumns($fields);
+        $queryColumns = $this->prepareColumns($fields, true);
         $queryValues = $this->prepareValues($fields);
         if ($this->transactionEnabled()) $this->handler->beginTransaction();
         $stmt = $this->handler->prepare("INSERT INTO `{$table}` {$queryColumns} VALUES {$queryValues} ON DUPLICATE KEY UPDATE");
-        $this->executeStatements($stmt, $values);
+        return $this->executeStatements($stmt, $values);
     }
+
+    use DriverDatabaseTrait;
 }
